@@ -126,13 +126,75 @@ public class UserServiceIMPL implements IUserServlet {
     public boolean updateUser(User user) throws SQLException {
         boolean rowUpdate;
         try (Connection connection = getConnection();
-             PreparedStatement preparedStatement = connection.prepareStatement(UPDATE_USERS_SQL);){
-            preparedStatement.setString(1,user.getName());
-            preparedStatement.setString(2,user.getEmail());
-            preparedStatement.setString(3,user.getCountry());
-            preparedStatement.setInt(4,user.getId());
+             PreparedStatement preparedStatement = connection.prepareStatement(UPDATE_USERS_SQL);) {
+            preparedStatement.setString(1, user.getName());
+            preparedStatement.setString(2, user.getEmail());
+            preparedStatement.setString(3, user.getCountry());
+            preparedStatement.setInt(4, user.getId());
             rowUpdate = preparedStatement.executeUpdate() > 0;
         }
         return rowUpdate;
+    }
+
+    public List<User> findByCountry(String country) {
+        try {
+            Connection connection = getConnection();
+            PreparedStatement preparedStatement = connection.prepareStatement("SELECT * from user where country like concat('%',?,'%')");
+            {
+                preparedStatement.setString(1, country);
+                ResultSet Rs = preparedStatement.executeQuery();
+                List<User> userList = new ArrayList<>();
+                while (Rs.next()) {
+                    int id = Rs.getInt("id");
+                    String name = Rs.getString("name");
+                    String email = Rs.getString("email");
+                    userList.add(new User(id, name, email, country));
+                }
+                return userList;
+            }
+
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public List<User> descByName() {
+        List<User> users = new ArrayList<>();
+        try (Connection connection = getConnection();
+             PreparedStatement preparedStatement = connection.prepareStatement("SELECT * FROM user ORDER BY name DESC")) {
+            ResultSet Rs = preparedStatement.executeQuery();
+            System.out.println(Rs);
+            while (Rs.next()) {
+                int id = Rs.getInt("id");
+                String name = Rs.getString("name");
+                String email = Rs.getString("email");
+                String country = Rs.getString("country");
+                users.add(new User(id, name, email, country));
+
+            }
+            return users;
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public List<User> escByName() {
+        List<User> users = new ArrayList<>();
+        try (Connection connection = getConnection();
+             PreparedStatement preparedStatement = connection.prepareStatement("SELECT * FROM user ORDER BY name")) {
+            ResultSet Rs = preparedStatement.executeQuery();
+            System.out.println(Rs);
+            while (Rs.next()) {
+                int id = Rs.getInt("id");
+                String name = Rs.getString("name");
+                String email = Rs.getString("email");
+                String country = Rs.getString("country");
+                users.add(new User(id, name, email, country));
+
+            }
+            return users;
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
     }
 }
